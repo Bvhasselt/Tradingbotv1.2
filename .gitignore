@@ -1,11 +1,17 @@
 # Freqtrade rules
-config*.json
+config_offline*.json
+config_realmoney*.json
+
 *.sqlite
 logfile.txt
-user_data/*
-!user_data/strategy/sample_strategy.py
-!user_data/notebooks
+
+user_data/backtest_results/*
+user_data/data/*
+user_data/hyperopt_results/*
+user_data/plot/*
 user_data/notebooks/*
+user_data/hyperopt.lock
+
 freqtrade-plot.html
 freqtrade-profit-plot.html
 freqtrade/rpc/api_server/ui/*
@@ -100,3 +106,4 @@ target/
 !config_examples/config_ftx.example.json
 !config_examples/config_full.example.json
 !config_examples/config_kraken.example.json
+.DS_Store
