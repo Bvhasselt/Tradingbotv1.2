@@ -167,7 +167,7 @@ def custom_hyperopt_buyelements(buy_indicators: List):
         # If the indicator is a guard
         elif usage == "guard":
             value = indicator_info[3]
-            
+
             if value >= -1.0 and value <= 1.0:
                 lower_bound = value - 0.3
                 upper_bound = value + 0.3
