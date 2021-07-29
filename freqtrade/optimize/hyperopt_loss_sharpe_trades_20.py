@@ -15,7 +15,7 @@ from pandas import DataFrame, date_range
 from freqtrade.optimize.hyperopt import IHyperOptLoss
 
 
-class SharpeHyperOptLossTrades1000(IHyperOptLoss):
+class SharpeHyperOptLossTrades20(IHyperOptLoss):
     """
     Defines the loss function for hyperopt.
 
@@ -33,38 +33,38 @@ class SharpeHyperOptLossTrades1000(IHyperOptLoss):
         """
 
         # CONSTANTS
-        MINIMUM_TRADES = 1000
-        SLIPPAGE_PER_TRADE_RATIO = 0.001
-        NUMERATOR_MAX_TRADEGRADE = 80
-        DENOMINATOR_MAX_TRADEGRADE = 8
-        RESAMPLE_FREQ = '1D'
-        DAYS_IN_YEAR = 365
-        ANNUAL_RISK_FREE_RATE = 0.0
+        minimum_trades = 20
+        slippage_per_trade_ratio = 0.001
+        numerator_max_tradegrade = 80
+        denominator_max_tradegrade = 8
+        resample_freq = '1D'
+        days_in_year = 365
+        annual_risk_free_rate = 0.0
 
-        risk_free_rate = ANNUAL_RISK_FREE_RATE / DAYS_IN_YEAR
+        risk_free_rate = annual_risk_free_rate / days_in_year
 
         """
         Sharpe Ratio Calculation
         """
-        # apply slippage per trade to profit_percent
-        results.loc[:, 'profit_percent_after_slippage'] = \
-            results['profit_percent'] - SLIPPAGE_PER_TRADE_RATIO
+        # apply slippage per trade to profit_ratio
+        results.loc[:, 'profit_ratio_after_slippage'] = \
+            results['profit_ratio'] - slippage_per_trade_ratio
 
         # create the index within the min_date and end max_date
-        t_index = date_range(start=min_date, end=max_date, freq=RESAMPLE_FREQ,
+        t_index = date_range(start=min_date, end=max_date, freq=resample_freq,
                              normalize=True)
 
         sum_daily = (
-            results.resample(RESAMPLE_FREQ, on='close_time').agg(
-                {"profit_percent_after_slippage": sum}).reindex(t_index).fillna(0)
+            results.resample(resample_freq, on='close_date').agg(
+                {"profit_ratio_after_slippage": sum}).reindex(t_index).fillna(0)
         )
 
-        total_profit = sum_daily["profit_percent_after_slippage"] - risk_free_rate
+        total_profit = sum_daily["profit_ratio_after_slippage"] - risk_free_rate
         expected_returns_mean = total_profit.mean()
         up_stdev = total_profit.std()
 
         if up_stdev != 0:
-            sharp_ratio = expected_returns_mean / up_stdev * math.sqrt(DAYS_IN_YEAR)
+            sharp_ratio = expected_returns_mean / up_stdev * math.sqrt(days_in_year)
         else:
             # Define high (negative) sharpe ratio to be clear that this is NOT optimal.
             sharp_ratio = -30.
@@ -72,14 +72,14 @@ class SharpeHyperOptLossTrades1000(IHyperOptLoss):
         """
         Trade Grade Calculation
         This function has a maximum grade of 80/DENOMINATOR_MAX_TRADEGRADE.
-        A minimum of 1005 trades.
+        A minimum of ... trades.
         """
 
-        if trade_count <= (MINIMUM_TRADES + 5):
+        if trade_count <= (minimum_trades + 5):
             # Define high (negative) trade grade tp be clear that this is NOT optimal
             trade_grade = -30
         else:
-            trade_grade = ((1 / (-0.001 * (trade_count - MINIMUM_TRADES))) +
-                           NUMERATOR_MAX_TRADEGRADE) / DENOMINATOR_MAX_TRADEGRADE
+            trade_grade = ((1 / (-0.001 * (trade_count - minimum_trades))) +
+                           numerator_max_tradegrade) / denominator_max_tradegrade
 
         return -(sharp_ratio + trade_grade)

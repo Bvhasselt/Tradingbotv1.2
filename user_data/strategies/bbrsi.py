@@ -117,7 +117,7 @@ class BBRSI(IStrategy):
         dataframe.loc[
             (
                 (dataframe['rsi'] > 30) &  # RSI above 30
-                (dataframe['close'] < dataframe['bb_lowerband'])  # close price under low bb
+                (dataframe['bb_lowerband'] > dataframe['close'])  # close price under low bb
             ),
             'buy'] = 1
 
@@ -127,7 +127,7 @@ class BBRSI(IStrategy):
 
         dataframe.loc[
             (
-                (dataframe['close'] > dataframe['bb_middleband'])  # close price above the middle bb
+                (dataframe['bb_middleband'] < dataframe['close'])  # close price above the middle bb
             ),
             'sell'] = 1
         return dataframe
